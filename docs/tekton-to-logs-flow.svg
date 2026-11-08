@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" font-family="Segoe UI, system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="tektonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="otelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="splunkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c2410c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="lokiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="grafanaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e65100"/>
+      <stop offset="100%" stop-color="#ff9830"/>
+    </linearGradient>
+    <linearGradient id="resultsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338ca"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="720" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="600" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Tekton Pipeline to Logs</text>
+  <text x="600" y="68" text-anchor="middle" font-size="14" fill="#64748b">hands-on-lab &#8212; configured resource flow (runtime path)</text>
+
+  <!-- Section: Tekton execution -->
+  <rect x="40" y="95" width="340" height="280" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="60" y="122" font-size="13" font-weight="700" fill="#1d4ed8">TEKTON EXECUTION</text>
+  <text x="60" y="140" font-size="11" fill="#64748b">namespace: default</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="160" width="280" height="56" rx="8" fill="url(#tektonGrad)"/>
+    <text x="210" y="184" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Pipeline / PipelineRun</text>
+    <text x="210" y="202" text-anchor="middle" font-size="11" fill="#dbeafe">demo-pipeline &#8594; demo-pipeline-run</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="240" width="280" height="56" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="210" y="264" text-anchor="middle" font-size="14" font-weight="600" fill="#1e3a8a">TaskRuns &amp; step pods</text>
+    <text x="210" y="282" text-anchor="middle" font-size="11" fill="#64748b">prepare &#183; build &#183; test &#183; publish</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="320" width="280" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="210" y="345" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">/var/log/pods (node filesystem)</text>
+  </g>
+
+  <line x1="210" y1="216" x2="210" y2="240" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <line x1="210" y1="296" x2="210" y2="320" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Section: OTel Collector -->
+  <rect x="430" y="95" width="340" height="280" rx="12" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.5"/>
+  <text x="450" y="122" font-size="13" font-weight="700" fill="#0f766e">OPEN TELEMETRY COLLECTOR</text>
+  <text x="450" y="140" font-size="11" fill="#64748b">DaemonSet tekton-logger &#183; namespace: logging</text>
+
+  <g filter="url(#shadow)">
+    <rect x="460" y="160" width="280" height="180" rx="8" fill="url(#otelGrad)"/>
+    <text x="600" y="186" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">tekton-logger collector</text>
+
+    <rect x="480" y="200" width="240" height="28" rx="5" fill="#ffffff" fill-opacity="0.95"/>
+    <text x="600" y="218" text-anchor="middle" font-size="11" fill="#134e4a">file_log &#8594; task pod logs</text>
+
+    <rect x="480" y="236" width="240" height="28" rx="5" fill="#ffffff" fill-opacity="0.95"/>
+    <text x="600" y="254" text-anchor="middle" font-size="11" fill="#134e4a">k8s_events &#8594; pod lifecycle events</text>
+
+    <rect x="480" y="272" width="240" height="28" rx="5" fill="#ffffff" fill-opacity="0.95"/>
+    <text x="600" y="290" text-anchor="middle" font-size="11" fill="#134e4a">k8s_objects &#8594; PipelineRun watch</text>
+
+    <text x="600" y="325" text-anchor="middle" font-size="10" fill="#ccfbf1">+ k8s_attributes &#183; transforms &#183; dedup &#183; redaction (day-2)</text>
+  </g>
+
+  <line x1="350" y1="340" x2="460" y2="250" stroke="#059669" stroke-width="2.5" marker-end="url(#arrow-green)"/>
+  <text x="390" y="288" font-size="10" fill="#059669" transform="rotate(-22 390 288)">tail logs</text>
+
+  <line x1="350" y1="188" x2="460" y2="290" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-blue)"/>
+  <text x="378" y="218" font-size="10" fill="#2563eb">metadata</text>
+
+  <!-- Section: Log backends -->
+  <rect x="820" y="95" width="340" height="310" rx="12" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+  <text x="840" y="122" font-size="13" font-weight="700" fill="#c2410c">LOG BACKENDS</text>
+  <text x="840" y="140" font-size="11" fill="#64748b">namespace: logging</text>
+
+  <g filter="url(#shadow)">
+    <rect x="850" y="170" width="280" height="72" rx="8" fill="url(#splunkGrad)"/>
+    <text x="990" y="198" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Splunk HEC</text>
+    <text x="990" y="218" text-anchor="middle" font-size="11" fill="#ffedd5">index: main &#183; sourcetype: tekton:logs</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="850" y="270" width="280" height="72" rx="8" fill="url(#lokiGrad)"/>
+    <text x="990" y="298" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Loki</text>
+    <text x="990" y="318" text-anchor="middle" font-size="11" fill="#ede9fe">otlp_http &#183; /otlp endpoint</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="850" y="355" width="130" height="48" rx="8" fill="url(#grafanaGrad)"/>
+    <text x="915" y="375" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">Grafana</text>
+    <text x="915" y="390" text-anchor="middle" font-size="9" fill="#ffedd5">Explore &#183; LogQL</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1000" y="355" width="130" height="48" rx="8" fill="#ffffff" stroke="#c7d2fe" stroke-width="1.5"/>
+    <text x="1065" y="375" text-anchor="middle" font-size="12" font-weight="600" fill="#312e81">OpenShift</text>
+    <text x="1065" y="390" text-anchor="middle" font-size="9" fill="#64748b">Console / Logging UI</text>
+  </g>
+
+  <line x1="740" y1="230" x2="850" y2="206" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrow-orange)"/>
+  <line x1="740" y1="270" x2="850" y2="306" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="768" y="210" font-size="10" fill="#ea580c">splunk_hec</text>
+  <text x="768" y="298" font-size="10" fill="#7c3aed">otlp_http/loki</text>
+
+  <path d="M 990 342 C 990 348, 915 348, 915 355" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <path d="M 990 342 C 990 348, 1065 348, 1065 355" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="990" y="350" text-anchor="middle" font-size="9" fill="#7c3aed">view logs</text>
+
+  <!-- Section: Results & Dashboard -->
+  <rect x="40" y="410" width="1120" height="270" rx="12" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
+  <text x="60" y="437" font-size="13" font-weight="700" fill="#4338ca">RESULTS &amp; DASHBOARD LOG RETRIEVAL</text>
+  <text x="60" y="455" font-size="11" fill="#64748b">after task pods are deleted &#8212; external logs fallback</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="480" width="200" height="64" rx="8" fill="#ffffff" stroke="#a5b4fc" stroke-width="1.5"/>
+    <text x="170" y="506" text-anchor="middle" font-size="13" font-weight="600" fill="#312e81">Tekton Results</text>
+    <text x="170" y="526" text-anchor="middle" font-size="10" fill="#64748b">Watcher records runs</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="320" y="480" width="200" height="64" rx="8" fill="url(#resultsGrad)"/>
+    <text x="420" y="506" text-anchor="middle" font-size="13" font-weight="600" fill="#ffffff">Results API</text>
+    <text x="420" y="526" text-anchor="middle" font-size="10" fill="#e0e7ff">LOGS_TYPE=Splunk</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="570" y="480" width="200" height="64" rx="8" fill="url(#splunkGrad)"/>
+    <text x="670" y="506" text-anchor="middle" font-size="13" font-weight="600" fill="#ffffff">Splunk search</text>
+    <text x="670" y="526" text-anchor="middle" font-size="10" fill="#ffedd5">query by TaskRun UID</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="820" y="480" width="200" height="64" rx="8" fill="#ffffff" stroke="#a5b4fc" stroke-width="1.5"/>
+    <text x="920" y="506" text-anchor="middle" font-size="13" font-weight="600" fill="#312e81">tekton-logs-proxy</text>
+    <text x="920" y="526" text-anchor="middle" font-size="10" fill="#64748b">/logs/ns/pod/container</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1070" y="480" width="70" height="64" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+    <text x="1105" y="506" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">Dash</text>
+    <text x="1105" y="522" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">board</text>
+  </g>
+
+  <line x1="270" y1="512" x2="320" y2="512" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="520" y1="512" x2="570" y2="512" stroke="#ea580c" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <line x1="770" y1="512" x2="820" y2="512" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1020" y1="512" x2="1070" y2="512" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- Results records from pipeline -->
+  <path d="M 210 216 C 210 380, 170 380, 170 480" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <text x="148" y="400" font-size="10" fill="#6366f1">record</text>
+
+  <!-- Splunk connection from OTel to Results path -->
+  <path d="M 990 242 C 990 420, 670 420, 670 480" fill="none" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow-orange)"/>
+  <text x="820" y="410" font-size="10" fill="#ea580c">stored logs</text>
+
+  <!-- Legend -->
+  <rect x="70" y="580" width="1060" height="80" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="90" y="604" font-size="12" font-weight="700" fill="#334155">Legend</text>
+  <line x1="90" y1="622" x2="130" y2="622" stroke="#059669" stroke-width="2.5"/>
+  <text x="140" y="626" font-size="11" fill="#475569">Real-time log shipping (OTel)</text>
+  <line x1="360" y1="622" x2="400" y2="622" stroke="#6366f1" stroke-width="2"/>
+  <text x="410" y="626" font-size="11" fill="#475569">Results metadata &amp; log API</text>
+  <line x1="620" y1="622" x2="660" y2="622" stroke="#ea580c" stroke-width="2"/>
+  <text x="670" y="626" font-size="11" fill="#475569">Splunk HEC ingest &amp; search</text>
+  <line x1="880" y1="622" x2="920" y2="622" stroke="#7c3aed" stroke-width="2.5"/>
+  <text x="930" y="626" font-size="11" fill="#475569">Loki OTLP ingest</text>
+  <line x1="620" y1="646" x2="660" y2="646" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="670" y="650" font-size="11" fill="#475569">Loki &#8594; Grafana / OpenShift UI</text>
+  <line x1="90" y1="646" x2="130" y2="646" stroke="#475569" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="140" y="650" font-size="11" fill="#475569">Indirect / persisted path</text>
+</svg>

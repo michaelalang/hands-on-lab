@@ -1,0 +1,15 @@
+# Cluster credentials
+kubeconfig
+value
+
+# Lab SSH keys (any path) — never commit
+id_ecdsa
+id_ecdsa.pub
+**/id_ecdsa
+**/id_ecdsa.pub
+
+# VM disk images (customized / SSH-injected)
+vms/*.qcow2
+vms/*.img
+vms/*.vhdx
+vms/id_*

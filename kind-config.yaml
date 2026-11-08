@@ -1,0 +1,35 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: openshift-dev
+# Splunk search forks many processes. Avoid low PID caps that leave Results
+# API Splunk jobs stuck in PARSING (Dashboard external logs then time out).
+containerdConfigPatches:
+  - |-
+    [plugins."io.containerd.grpc.v1.cri"]
+      default_pids_limit = -1
+kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        resolv-conf: "/kind-node-resolv.conf"
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        resolv-conf: "/kind-node-resolv.conf"
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    podPidsLimit: -1
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ./kind-node-resolv.conf
+        containerPath: /kind-node-resolv.conf
+        readOnly: true
+  - role: worker
+    extraMounts:
+      - hostPath: ./kind-node-resolv.conf
+        containerPath: /kind-node-resolv.conf
+        readOnly: true
