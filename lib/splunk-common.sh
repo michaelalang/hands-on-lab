@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+namespace=${NAMESPACE:-logging}
+
 splunk_pod() {
-  kubectl get pod -n logging -l app=splunk-hec \
+  kubectl get pod -n ${namespace} -l app=splunk-hec \
     -o jsonpath='{.items[0].metadata.name}' 2>/dev/null
 }
 
@@ -9,7 +11,7 @@ splunk_curl() {
   local pod
   pod="$(splunk_pod)"
   [[ -n "${pod}" ]] || return 1
-  kubectl exec -n logging "${pod}" -- \
+  kubectl exec -n ${namespace} "${pod}" -- \
     /usr/bin/curl -sk -u "admin:${SPLUNK_PASSWORD}" "$@"
 }
 

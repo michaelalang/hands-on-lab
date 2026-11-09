@@ -388,7 +388,7 @@ rm -f kubeconfig
 - **Tekton Results** still stores run metadata in Postgres; Splunk is only the log retrieval backend (`LOGS_TYPE=Splunk`). Use `./09-update-tekton-results-splunk.sh` to apply or refresh that configuration on an existing cluster.
 - The demo pipeline prints a **sample card number** and a **password in a registry URL** so you can prove redaction later. Those values are intentional lab fixtures, not real secrets — still avoid copying them into shared screenshots without masking.
 - **Day-2 operations** (see [Day-2 operations](#day-2-operations)): (a) attach `redaction/cc` + `redaction/creds`; (b) `./10-mtls-log-forwarding.sh` for cert-manager PKI, Splunk OTLP mTLS sidecar, and `otlp_http/splunk_hec` client-cert export (script also enables redaction).
-- **cert-manager (step 2)** is required before day-2b; leaf certificates in the script are short-lived (60m) so you can also demo renewal under load.
+- **cert-manager (step 2)** is required before day-2b; leaf certificates use duration: 60m and renewBefore: 55m, so they renew about every 5 minutes and you can demo renewal under load.
 - **RHEL 10:** step 1 auto-runs the nftables kube-proxy / kindnet fix only when the host is RHEL 10; other distros skip that script unless you invoke it manually.
 - For a clean redeploy, remove the lab (see above), then start again from step 1.
 

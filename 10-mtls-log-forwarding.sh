@@ -1,4 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export KUBECONFIG="${KUBECONFIG:-${SCRIPT_DIR}/kubeconfig}"
 
 cat <<'EOF' | kubectl create -f-
 apiVersion: cert-manager.io/v1
