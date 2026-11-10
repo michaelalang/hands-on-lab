@@ -50,19 +50,97 @@ Day-2 hardening (run after the demo pipeline has already shipped unredacted logs
 | **day-2b** | `./07-configure-mtls-otel-collector.sh` | Issues a lab CA + mTLS certs (cert-manager), injects an OTel sidecar in front of Splunk HEC, and retargets `tekton-logger` to export over OTLP/HTTPS with client certs (also wires redaction into the pipelines). |
 | **day-2c** | Verify mTLS with `curl` | Prove the Splunk OTLP front door rejects plaintext, unverified, and unauthenticated clients, then succeed with lab CA + client cert + correct hostname. |
 
-## One-liner
+## OpenShift instructions pod Setup
+
+browse to the pod (instructions-...) in namespace `lab` and execeute the following commands in the Terminal.
 
 ```bash
-cd /path/to/hands-on-lab/ocp
-export KUBECONFIG="$(pwd)/kubeconfig"
+git clone https://github.com/michaelalang/hands-on-lab.git
+cd hands-on-lab/ocp
+```
 
-./01-operators.sh && \
-./02-loki-storage.sh && \
-./03-install-splunk-hec.sh && \
-./04-configure-openshift-pipelines.sh && \
-./05-configure-otel-collector.sh && \
+* First install the mandatory operators be executing following command
+
+```
+./01-operators.sh
+```
+
+* Second, configure S3 Buckets space in OpenShift DataFoundation for the Loki Stack
+
+```
+./02-loki-storage.sh
+```
+
+* Third, install Splun-HEC as long-term compliance storage solution.
+
+```
+./03-install-splunk-hec.sh
+```
+
+* Fourth, configure OpenShift Pipelines to utilize the Results in API to retrieve reconciled pod logs from the long-term Storage.
+
+```
+./04-configure-openshift-pipelines.sh
+```
+
+* Fifth, configure OpenTelemetryCollector as log and event collector feeding both the Loki Stack as well as the Splunk-Hec long-term store.
+
+```
+./05-configure-otel-collector.sh
+```
+
+* Sixth, (repeatable) run a Demo Pipeline creating logs and events accordingly.
+
+```
 ./06-run-pipeline.sh
 ```
+
+* Seven, open the OpenShift UI on `Observe` Logs and search for the Pipeline run using following Query prompt
+
+```
+{ openshift_log_type="application" } | tekton_pipelinerun=~"demo-pipeline-run-.+" # or explicit pipelinerun name as returned in ./06-run-pipeline.sh
+```
+
+* Eight, open the OpenShift UI on `Pipelines`. Switch `Project` to `default` and open the `Last run` item. Open the Logs of the PipelineRun.
+
+* Nine, delete all pods in the PipelineRun by executing following command in the `instructions` Pod in the `lab` namespace.
+
+```
+oc -n default delete pod --all
+```
+
+* Ten, revisit the PipelineRun logs and check that the Task logs return 
+
+```
+Unable to access log for build task
+```
+
+* Eleven, execute the following command in the `instructions` Pod in namespace `lab` to enable the admin accessToken
+
+```
+./03-install-splunk-hec.sh
+```
+
+* Twelve, execute the following command to update the TektonResults cluster config with the value
+
+```
+oc -n openshift-pipelines delete pod -l app.kubernetes.io/name=tekton-results-api
+```
+
+* Thirteen, execute another PipelineRun by executing following command
+
+```
+./06-run-pipeline.sh
+```
+
+* Fourteen, wait the pipeline run to finish and re-evaluate the Logs with the pods present and after deleting.
+
+```
+oc -n default delete pod --all
+```
+
+* Fifthteen, you should now be able to still retrieve the Task logs even though the pods have been reconciled.
+
 
 After step 1, wait until Operator CSVs are Succeeded and related pods are Ready before continuing (especially Pipelines, Loki, OpenTelemetry, and COO).
 
@@ -275,6 +353,8 @@ oc -n openshift-logging extract secret/tekton-logger-collector-certificate --con
 ```
 
 **2.1. Running inside OpenShift lab pod
+
+browse to the pod (instructions-..) in namespace `lab` Terminal and execute the following commands.
 
 **2.1.2. Plain HTTP to the OTLP endpoint**
 
