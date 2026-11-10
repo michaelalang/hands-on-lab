@@ -17,7 +17,7 @@ Tekton Pipeline execution through to log storage and retrieval:
 
 ### Install tools (user-local binaries)
 
-Binaries are installed under `~/lab-bin` (not `/usr/bin` or `/usr/local/bin`). Add that directory to your `PATH` for the current shell and future sessions.
+Binaries are installed under `~/lab-bin` (not `/usr/bin` or `/usr/local/bin`). Add that directory to your `PATH` for the current shell and future sessions. **For MacOS** please run tools.sh or replace `linux` with `darwin`
 
 ```bash
 # Directory for lab CLI tools (non-system path)
@@ -77,13 +77,16 @@ helm version
 
 **Also required** (install with your OS package manager; not placed in `~/lab-bin`):
 
-- **podman** — container runtime for kind on Fedora (`sudo dnf install -y podman`)
+- **podman** — container runtime for kind on Fedora (`sudo dnf install -y podman / brew install podman`)
 - **openssl** — TLS certs for Tekton Results (`sudo dnf install -y openssl`; usually already installed)
 - **curl** — downloads above (`sudo dnf install -y curl`)
+- **For MacOS** **bash** downloads the newest bash version (`brew install bash`)
 
 ### Lab environment
 
 **Disk:** at least **40 GiB** root filesystem (25 GiB free). A default ~10 GiB cloud image will fill during Splunk/kind install; podman then fails with `No space left on device`, the API port dies, and `kubectl` shows `connection refused`.
+
+**Podman Desktop on MacOS** Run the Podman Machine with at least 4 CPU and 8GiB Memory on Apple Hypervisor
 
 From the repo directory:
 
@@ -130,7 +133,7 @@ Day-2 hardening (run after the demo pipeline has already shipped unredacted logs
 | **day-2a** | Edit `tekton-logger` (or use day-2b) | Enable `redaction/cc` + `redaction/creds` so card numbers and passwords are masked before long-term storage. |
 | **day-2b** | `./10-mtls-log-forwarding.sh` | Issues a lab CA + mTLS certs, injects an OTel sidecar in front of Splunk HEC, and retargets `tekton-logger` to export over OTLP/HTTPS with client certs (also wires redaction into the pipelines). |
 
-## One-liner
+## One-liner for Linux
 
 From scratch, use `run.sh` (same steps as the table above, with end-to-end verification at the end):
 
@@ -168,6 +171,45 @@ These are invoked automatically by step 1:
 - `01-configure-kube-proxy-nftables.sh` — only when `/etc/redhat-release` reports **Red Hat Enterprise Linux release 10** (nftables-only). Skipped on Fedora and other hosts; run it yourself if you are on another nftables-only kernel with the same ClusterIP failures.
 
 Re-run `01-configure-node-hosts.sh` only if a worker node is stuck `NotReady` after a partial or failed cluster create. Re-run `01-configure-kube-proxy-nftables.sh` if CoreDNS/local-path stay broken on an RHEL 10 / nftables-only host.
+
+## One-liner for MacOS
+
+From scratch, use `run.sh` (same steps as the table above, with end-to-end verification at the end):
+
+```bash
+cd /path/to/hands-on-lab
+./run-macos.sh
+```
+
+Or run the steps manually:
+
+```bash
+cd /path/to/hands-on-lab
+export KUBECONFIG="$(pwd)/kubeconfig"
+export KIND_EXPERIMENTAL_PROVIDER=podman
+
+./01-start-local-cluster-macos.sh && \
+./02-install-cert-manager.sh && \
+./03-configure-namespace.sh && \
+./03-rbac.sh && \
+./03-install-loki.sh && \
+./04-install-tekton.sh && \
+./05-install-opentelemetry.sh && \
+./06-install-splunk-hec-macos.sh && \
+./07-configure-otel-collector.sh && \
+./04-configure-dashboard-logs.sh && \
+./08-run-pipeline.sh
+```
+
+## Do not run manually
+
+These are invoked automatically by step 1:
+
+- `01-configure-node-hosts-macos.sh`
+- `01-configure-cluster-dns.sh`
+- `01-configure-kube-proxy-nftables.sh` — only when `/etc/redhat-release` reports **Red Hat Enterprise Linux release 10** (nftables-only). Skipped on Fedora and other hosts; run it yourself if you are on another nftables-only kernel with the same ClusterIP failures.
+
+Re-run `01-configure-node-hosts-macos.sh` only if a worker node is stuck `NotReady` after a partial or failed cluster create.
 
 ## Optional verification
 
