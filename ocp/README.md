@@ -352,7 +352,7 @@ Evaluates that day-2b issued usable client material (`tls.crt` / `tls.key` / `ca
 oc -n openshift-logging extract secret/tekton-logger-collector-certificate --confirm
 ```
 
-**2.1. Running inside OpenShift lab pod
+**2.1. Running inside OpenShift lab pod**
 
 browse to the pod (instructions-..) in namespace `lab` Terminal and execute the following commands.
 
