@@ -32,7 +32,7 @@ configure_tekton_results_splunk() {
 
   kubectl create secret generic tekton-results-splunk -n ${NAMESPACE_PIPELINE} \
     --from-literal=token="${splunk_token}" \
-    --dry-run=client -o yaml | oc apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
 
   echo "Configuring Tekton Results API for Splunk log retrieval..."
   local results_api_config results_api_config_new line key
@@ -65,7 +65,7 @@ configure_tekton_results_splunk() {
   kubectl create configmap tekton-results-api-config \
     --from-file=config="${results_api_config_new}" \
     -n ${NAMESPACE_PIPELINE} \
-    --dry-run=client -o yaml | oc apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
   rm -f "${results_api_config}" "${results_api_config_new}"
 
   kubectl set env deployment/tekton-results-api -n ${NAMESPACE_PIPELINE} \

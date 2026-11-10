@@ -13,7 +13,7 @@ metadata:
 EOF
 
 echo "creating objectBucketClaim for LokiStack"
-cat <<'EOF' | oc -n openshift-logging apply -f-
+cat <<'EOF' | kubectl -n openshift-logging apply -f-
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
 metadata:
@@ -34,9 +34,9 @@ EOF
 echo "Waiting for BucketClaim to be ready"
 kubectl -n openshift-logging wait --for=jsonpath='{.status.phase}'=Bound objectBucketClaim lokistack-s3-claim
 
-BUCKETNAME=$(oc -n openshift-logging get ObjectBucketClaim lokistack-s3-claim -o jsonpath='{.spec.bucketName}')
-ACCESS_KEY=$(oc -n openshift-logging get secret lokistack-s3-claim -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
-SECRET_KEY=$(oc -n openshift-logging get secret lokistack-s3-claim -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
+BUCKETNAME=$(kubectl -n openshift-logging get ObjectBucketClaim lokistack-s3-claim -o jsonpath='{.spec.bucketName}')
+ACCESS_KEY=$(kubectl -n openshift-logging get secret lokistack-s3-claim -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
+SECRET_KEY=$(kubectl -n openshift-logging get secret lokistack-s3-claim -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
 
 kubectl -n openshift-logging delete secret lokistack-s3 --ignore-not-found
 

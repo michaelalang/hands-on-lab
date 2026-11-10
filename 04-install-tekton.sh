@@ -7,12 +7,12 @@ export KUBECONFIG="${KUBECONFIG:-${SCRIPT_DIR}/kubeconfig}"
 TEKTON_RESULTS_VERSION="${TEKTON_RESULTS_VERSION:-v0.20.0}"
 
 # Install core pipeline engine
-oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 
 # Install Tekton Triggers (used for webhooks and events)
-oc apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
 
-oc apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release-full.yaml
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release-full.yaml
 
 echo "Waiting for Tekton Pipelines to be ready..."
 kubectl wait --for=condition=Available deployment --all \
@@ -29,12 +29,12 @@ kubectl patch configmap feature-flags -n tekton-pipelines --type merge \
   -p '{"data":{"results-from":"termination-message"}}' 2>/dev/null || true
 
 echo "Installing Tekton Results ${TEKTON_RESULTS_VERSION} prerequisites..."
-kubectl create namespace tekton-pipelines --dry-run=client -o yaml | oc apply -f -
+kubectl create namespace tekton-pipelines --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl create secret generic tekton-results-postgres -n tekton-pipelines \
   --from-literal=POSTGRES_USER=postgres \
   --from-literal=POSTGRES_PASSWORD="${TEKTON_RESULTS_DB_PASSWORD:-$(openssl rand -base64 20)}" \
-  --dry-run=client -o yaml | oc apply -f -
+  --dry-run=client -o yaml | kubectl apply -f -
 
 if ! kubectl get secret tekton-results-tls -n tekton-pipelines >/dev/null 2>&1; then
   TLS_DIR="$(mktemp -d)"
@@ -53,7 +53,7 @@ if ! kubectl get secret tekton-results-tls -n tekton-pipelines >/dev/null 2>&1; 
 fi
 
 echo "Installing Tekton Results..."
-oc apply -f "https://infra.tekton.dev/tekton-releases/results/previous/${TEKTON_RESULTS_VERSION}/release.yaml"
+kubectl apply -f "https://infra.tekton.dev/tekton-releases/results/previous/${TEKTON_RESULTS_VERSION}/release.yaml"
 
 echo "Patching Tekton Results database host for in-cluster DNS..."
 RESULTS_API_CONFIG="$(mktemp)"
@@ -76,7 +76,7 @@ done < "${RESULTS_API_CONFIG}" > "${RESULTS_API_CONFIG_NEW}"
 kubectl create configmap tekton-results-api-config \
   --from-file=config="${RESULTS_API_CONFIG_NEW}" \
   -n tekton-pipelines \
-  --dry-run=client -o yaml | oc apply -f -
+  --dry-run=client -o yaml | kubectl apply -f -
 rm -f "${RESULTS_API_CONFIG}" "${RESULTS_API_CONFIG_NEW}"
 trap - EXIT
 kubectl set env deployment/tekton-results-watcher -n tekton-pipelines \

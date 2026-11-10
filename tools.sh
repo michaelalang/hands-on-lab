@@ -47,11 +47,7 @@ mv "/tmp/linux-${ARCH}/helm" "${LAB_BIN}/helm"
 chmod +x "${LAB_BIN}/helm"
 rm -rf "/tmp/linux-${ARCH}" "/tmp/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz"
 
-# Lab scripts call `oc`; kubectl is sufficient — symlink for compatibility
-ln -sf "${LAB_BIN}/kubectl" "${LAB_BIN}/oc"
-
 # Verify
 kubectl version --client
 kind version
 helm version
-oc version --client

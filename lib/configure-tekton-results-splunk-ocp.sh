@@ -32,7 +32,7 @@ configure_tekton_results_splunk() {
 
   kubectl create secret generic tekton-results-splunk -n ${NAMESPACE_PIPELINE} \
     --from-literal=token="${splunk_token}" \
-    --dry-run=client -o yaml | oc apply -f -
+    --dry-run=client -o yaml | kubectl apply -f -
 
   for seq in $(seq 1 10) ; do 
     kubectl -n ${NAMESPACE_PIPELINE} get secret tekton-results-splunk && break

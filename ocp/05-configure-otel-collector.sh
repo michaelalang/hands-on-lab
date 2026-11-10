@@ -21,7 +21,7 @@ if kubectl get deployment tekton-results-api -n ${NAMESPACE_PIPELINE} >/dev/null
   kubectl rollout status deployment/tekton-results-api -n ${NAMESPACE_PIPELINE} --timeout=300s
 fi
 
-cat <<'EOF' | oc apply -f-
+cat <<'EOF' | kubectl apply -f-
 allowHostDirVolumePlugin: true
 allowHostIPC: false
 allowHostNetwork: false
@@ -62,7 +62,7 @@ volumes:
   - secret
 EOF
 
-cat <<'EOF' | oc apply -f-
+cat <<'EOF' | kubectl apply -f-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -190,7 +190,7 @@ EOF
 
 sleep 1
 
-cat <<'EOF' | oc apply -f-
+cat <<'EOF' | kubectl apply -f-
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:

@@ -7,7 +7,7 @@ export KUBECONFIG="${KUBECONFIG:-${SCRIPT_DIR}/kubeconfig}"
 RESULTS_API="${RESULTS_API:-https://tekton-results-api-service.tekton-pipelines.svc:8080}"
 EXTERNAL_LOGS_URL="${EXTERNAL_LOGS_URL:-http://tekton-logs-proxy.tekton-pipelines.svc:8080/logs}"
 
-cat <<'EOF' | oc apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:

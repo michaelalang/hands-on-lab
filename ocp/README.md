@@ -19,13 +19,15 @@ Tekton Pipeline execution through to log storage and retrieval:
   - **OLM** and access to `redhat-operators` in `openshift-marketplace`
   - **OpenShift Data Foundation / NooBaa** (or equivalent) so `ObjectBucketClaim` can provision S3 storage for LokiStack
   - Cluster-admin (or equivalent) to install Operators, SCCs, and cluster-scoped RBAC
-- `oc` and/or `kubectl` configured for that cluster
+- `kubectl` configured for that cluster (`oc login` is fine if you use it to obtain the kubeconfig)
 - From this directory:
 
 ```bash
 cd /path/to/hands-on-lab/ocp
 export KUBECONFIG="$(pwd)/kubeconfig"   # or your cluster kubeconfig
 ```
+- Using the instructions lab Pod deployment approach, the Pod runs with a Kubernetes Token bound to Cluster-Admin role. No Kubernetes configuration is necessary if you choose this method.
+
 
 **Day-2b** also needs **cert-manager** (cert-manager Operator). A Subscription manifest is provided as `operators/cert-manager.disabled` — rename/apply it (or install cert-manager another way) before [Day-2b](#day-2b-mtls-log-forwarding-07-configure-mtls-otel-collectorsh).
 
@@ -51,6 +53,8 @@ Day-2 hardening (run after the demo pipeline has already shipped unredacted logs
 | **day-2c** | Verify mTLS with `curl` | Prove the Splunk OTLP front door rejects plaintext, unverified, and unauthenticated clients, then succeed with lab CA + client cert + correct hostname. |
 
 ## OpenShift instructions pod Setup
+
+**NOTE** cloning this repo expects it to be named `hands-on-lab`. If you change this please adjust the base path cd accordingly.
 
 browse to the pod (instructions-...) in namespace `lab` and execeute the following commands in the Terminal.
 
@@ -106,7 +110,7 @@ cd hands-on-lab/ocp
 * Nine, delete all pods in the PipelineRun by executing following command in the `instructions` Pod in the `lab` namespace.
 
 ```
-oc -n default delete pod --all
+kubectl -n default delete pod --all
 ```
 
 * Ten, revisit the PipelineRun logs and check that the Task logs return 
@@ -124,7 +128,7 @@ Unable to access log for build task
 * Twelve, execute the following command to update the TektonResults cluster config with the value
 
 ```
-oc -n openshift-pipelines delete pod -l app.kubernetes.io/name=tekton-results-api
+kubectl -n openshift-pipelines delete pod -l app.kubernetes.io/name=tekton-results-api
 ```
 
 * Thirteen, execute another PipelineRun by executing following command
@@ -136,7 +140,7 @@ oc -n openshift-pipelines delete pod -l app.kubernetes.io/name=tekton-results-ap
 * Fourteen, wait the pipeline run to finish and re-evaluate the Logs with the pods present and after deleting.
 
 ```
-oc -n default delete pod --all
+kubectl -n default delete pod --all
 ```
 
 * Fifthteen, you should now be able to still retrieve the Task logs even though the pods have been reconciled.
@@ -268,13 +272,13 @@ processors:
 ```bash
 export KUBECONFIG="$(pwd)/kubeconfig"
 
-oc -n openshift-logging edit opentelemetrycollector tekton-logger
+kubectl -n openshift-logging edit opentelemetrycollector tekton-logger
 # Under spec.config.service.pipelines.logs.processors, append:
 #   - redaction/cc
 #   - redaction/creds
 
-oc rollout status daemonset/tekton-logger-collector -n openshift-logging --timeout=300s
-oc delete pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --ignore-not-found
+kubectl rollout status daemonset/tekton-logger-collector -n openshift-logging --timeout=300s
+kubectl delete pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --ignore-not-found
 ./06-run-pipeline.sh
 ```
 
@@ -329,12 +333,12 @@ Run it after day 1 is healthy:
 export KUBECONFIG="$(pwd)/kubeconfig"
 ./07-configure-mtls-otel-collector.sh
 
-oc -n openshift-logging get certificate,secret | grep -E 'local-ca|tekton-logger-collector|splunk-hec'
-oc -n openshift-logging get pod -l app=splunk-hec -o jsonpath='{.items[0].spec.containers[*].name}{"\n"}'
+kubectl -n openshift-logging get certificate,secret | grep -E 'local-ca|tekton-logger-collector|splunk-hec'
+kubectl -n openshift-logging get pod -l app=splunk-hec -o jsonpath='{.items[0].spec.containers[*].name}{"\n"}'
 # expect: splunk-hec … otel-collector (injected sidecar)
 
-oc rollout status daemonset/tekton-logger-collector -n openshift-logging --timeout=300s
-oc delete pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --ignore-not-found
+kubectl rollout status daemonset/tekton-logger-collector -n openshift-logging --timeout=300s
+kubectl delete pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --ignore-not-found
 ./06-run-pipeline.sh
 ```
 
@@ -349,7 +353,9 @@ Goal for the audience: **prove** the sidecar is not just “HTTPS with a self-si
 Evaluates that day-2b issued usable client material (`tls.crt` / `tls.key` / `ca.crt`) for the same identity `tekton-logger` presents.
 
 ```bash
-oc -n openshift-logging extract secret/tekton-logger-collector-certificate --confirm
+for f in tls.crt tls.key ca.crt; do
+  kubectl -n openshift-logging get secret tekton-logger-collector-certificate -o "jsonpath={.data.${f}}" | base64 -d > "$f"
+done
 ```
 
 **2.1. Running inside OpenShift lab pod**
@@ -399,7 +405,7 @@ curl https://splunk-hec.openshift-logging.svc:4318/v1/logs -d '{}' -H 'Content-T
 Evaluates that the Splunk Service exposes the sidecar’s `:4318` and that you can reach it from the workstation without leaving the cluster network open.
 
 ```bash
-oc -n openshift-logging port-forward service/splunk-hec 4318:4318 &
+kubectl -n openshift-logging port-forward service/splunk-hec 4318:4318 &
 ```
 
 **2.2.3. Plain HTTP to the OTLP endpoint**
@@ -449,7 +455,7 @@ curl https://splunk-hec:4318/v1/logs -d '{}' -H 'Content-Type: application/json'
 {"partialSuccess":{}}
 ```
 
-That empty `partialSuccess` is the OTLP HTTP success body for an accepted (if empty) logs export — enough to show the TLS handshake and authorization path worked. Stop the background port-forward when finished (`kill %1` or the `oc port-forward` PID).
+That empty `partialSuccess` is the OTLP HTTP success body for an accepted (if empty) logs export — enough to show the TLS handshake and authorization path worked. Stop the background port-forward when finished (`kill %1` or the `kubectl port-forward` PID).
 
 ## Notes
 

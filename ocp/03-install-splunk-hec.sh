@@ -24,7 +24,7 @@ splunk_enable_remote_login() {
     -d "allowRemoteLogin=always" >/dev/null
 }
 
-cat <<'EOF' | oc -n openshift-logging apply -f-
+cat <<'EOF' | kubectl -n openshift-logging apply -f-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -41,7 +41,7 @@ subjects:
   namespace: openshift-logging
 EOF
 
-cat <<'EOF' | oc -n openshift-logging apply -f-
+cat <<'EOF' | kubectl -n openshift-logging apply -f-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -49,7 +49,7 @@ metadata:
   namespace: openshift-logging
 EOF
 
-cat <<EOF | oc apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -18,7 +18,7 @@ if kubectl get deployment tekton-results-api -n tekton-pipelines >/dev/null 2>&1
   kubectl rollout status deployment/tekton-results-api -n tekton-pipelines --timeout=300s
 fi
 
-cat <<'EOF' | oc apply -f-
+cat <<'EOF' | kubectl apply -f-
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:

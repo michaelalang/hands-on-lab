@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export KUBECONFIG="${KUBECONFIG:-${SCRIPT_DIR}/kubeconfig}"
 
 echo "Tekton Pipelines pods:"
-oc get pods -n tekton-pipelines
+kubectl get pods -n tekton-pipelines
 
 echo
 echo "Dashboard external logs:"
@@ -40,4 +40,4 @@ kubectl get deployment,svc tekton-logs-proxy -n tekton-pipelines 2>/dev/null || 
 
 echo
 echo "Port forward the Dashboard UI: address 127.0.0.1 port: 9097"
-oc port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097 --address 0.0.0.0 >/dev/null 2>&1  &
+kubectl port-forward -n tekton-pipelines service/tekton-dashboard 9097:9097 --address 0.0.0.0 >/dev/null 2>&1  &

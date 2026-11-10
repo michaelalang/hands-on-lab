@@ -4,9 +4,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export KUBECONFIG="${KUBECONFIG:-${SCRIPT_DIR}/kubeconfig}"
 
-oc create namespace logging --dry-run=client -o yaml | oc apply -f -
+kubectl create namespace logging --dry-run=client -o yaml | kubectl apply -f -
 
-cat <<'EOF' | oc apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:

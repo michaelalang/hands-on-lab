@@ -26,7 +26,7 @@ splunk_enable_remote_login() {
     -d "allowRemoteLogin=always" >/dev/null
 }
 
-cat <<EOF | oc apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: apps/v1
 kind: Deployment
 metadata:

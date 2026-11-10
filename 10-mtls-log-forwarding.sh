@@ -207,8 +207,8 @@ spec:
         defaultMode: 420
 EOF
 
-oc -n logging patch deploy/splunk-hec --type=merge -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.opentelemetry.io/inject":"splunk-hec-sidecar"}}}}}' 
-oc -n logging patch service splunk-hec --type merge -p '{"spec":{"ports":[{"name":"otlp-grpc","port":4317,"targetPort":4317},{"name":"otlp-http","port":4318,"targetPort":4318},{"name":"splunk-http","port":8000,"targetPort":8000},{"name":"api","port":8089,"targetPort":8089}]}}'
+kubectl -n logging patch deploy/splunk-hec --type=merge -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.opentelemetry.io/inject":"splunk-hec-sidecar"}}}}}' 
+kubectl -n logging patch service splunk-hec --type merge -p '{"spec":{"ports":[{"name":"otlp-grpc","port":4317,"targetPort":4317},{"name":"otlp-http","port":4318,"targetPort":4318},{"name":"splunk-http","port":8000,"targetPort":8000},{"name":"api","port":8089,"targetPort":8089}]}}'
 
 cat <<'EOF' | kubectl -n logging apply -f-
 apiVersion: opentelemetry.io/v1beta1

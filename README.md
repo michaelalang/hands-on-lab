@@ -69,14 +69,10 @@ mv "/tmp/linux-${ARCH}/helm" "${LAB_BIN}/helm"
 chmod +x "${LAB_BIN}/helm"
 rm -rf "/tmp/linux-${ARCH}" "/tmp/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz"
 
-# Lab scripts call `oc`; kubectl is sufficient — symlink for compatibility
-ln -sf "${LAB_BIN}/kubectl" "${LAB_BIN}/oc"
-
 # Verify
 kubectl version --client
 kind version
 helm version
-oc version --client
 ```
 
 **Also required** (install with your OS package manager; not placed in `~/lab-bin`):
@@ -87,7 +83,7 @@ oc version --client
 
 ### Lab environment
 
-**Disk:** at least **40 GiB** root filesystem (25 GiB free). A default ~10 GiB cloud image will fill during Splunk/kind install; podman then fails with `No space left on device`, the API port dies, and `oc`/`kubectl` show `connection refused`.
+**Disk:** at least **40 GiB** root filesystem (25 GiB free). A default ~10 GiB cloud image will fill during Splunk/kind install; podman then fails with `No space left on device`, the API port dies, and `kubectl` shows `connection refused`.
 
 From the repo directory:
 
@@ -100,7 +96,6 @@ export KIND_EXPERIMENTAL_PROVIDER=podman   # Fedora + podman
 Required tools summary:
 
 - `kind`, `kubectl`, `helm` — from `~/lab-bin` (see above)
-- `oc` — symlink to `kubectl` in `~/lab-bin`
 - `podman` (or `docker`)
 - `openssl`
 
@@ -439,7 +434,7 @@ export KIND_EXPERIMENTAL_PROVIDER=podman
 kubectl wait --for=condition=Ready node --all --timeout=120s
 ```
 
-### `oc` / `kubectl` connection refused / Splunk rollout timeout
+### `kubectl` connection refused / Splunk rollout timeout
 
 Usually the VM disk filled up (common on 10 GiB cloud images). kind volumes + images exhaust space/inodes; the API listen port dies and Splunk never becomes Ready.
 

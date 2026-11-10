@@ -9,7 +9,7 @@ source "${SCRIPT_DIR}/../lib/verify-external-logs.sh"
 
 kubectl -n default delete pipeline,pipelinerun,tasks --all --ignore-not-found=true
 
-cat <<'EOF' | oc apply -f-
+cat <<'EOF' | kubectl apply -f-
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -125,7 +125,7 @@ spec:
 EOF
 
 echo "PipelineRun demo-pipeline-run created. Waiting for completion..."
-oc wait --for=condition=Succeeded pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --timeout=300s
-oc get pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default
+kubectl wait --for=condition=Succeeded pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default --timeout=300s
+kubectl get pipelinerun -l tekton.dev/pipeline=demo-pipeline -n default
 
 echo "Demo pipeline complete."
