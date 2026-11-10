@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 NAMESPACE_PIPELINE=${NAMESPACE_PIPELINE:-tekton-pipelines}
+NAMESPACE=${NAMESPACE:-logging}
 
 configure_tekton_results_splunk() {
   if ! kubectl get deployment tekton-results-api -n ${NAMESPACE_PIPELINE} >/dev/null 2>&1; then
