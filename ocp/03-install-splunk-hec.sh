@@ -13,7 +13,7 @@ SPLUNK_IMAGE="${SPLUNK_IMAGE:-docker.io/splunk/splunk:9.3.9}"
 
 # shellcheck source=lib/splunk-common.sh
 source "${SCRIPT_DIR}/../lib/splunk-common.sh"
-# shellcheck source=lib/configure-tekton-results-splunk.sh
+# shellcheck source=lib/configure-tekton-results-splunk-ocp.sh
 source "${SCRIPT_DIR}/../lib/configure-tekton-results-splunk.sh"
 # shellcheck source=lib/raise-kind-pids.sh
 source "${SCRIPT_DIR}/../lib/raise-kind-pids.sh"

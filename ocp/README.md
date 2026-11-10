@@ -274,7 +274,47 @@ Evaluates that day-2b issued usable client material (`tls.crt` / `tls.key` / `ca
 oc -n openshift-logging extract secret/tekton-logger-collector-certificate --confirm
 ```
 
-**2. Port-forward the OTLP HTTP port**
+**2.1. Running inside OpenShift lab pod
+
+**2.1.2. Plain HTTP to the OTLP endpoint**
+
+Evaluates that the listener is TLS-only (cleartext HTTP must not be accepted as a log ingest path).
+
+```bash
+curl http://splunk-hec.openshift-logging.svc:4318/v1/logs -d '{}' -H 'Content-Type: application/json'
+```
+
+**2.1.3. HTTPS without trusting the lab CA**
+
+Evaluates server authenticity: the sidecar presents a cert whose SANs are `splunk-hec…` but CA is not trusted.
+
+```bash
+curl https://splunk-hec.openshift-logging.svc:4318/v1/logs -d '{}' -H 'Content-Type: application/json'
+```
+
+**2.1.4. HTTPS with verify skipped, still no client cert**
+
+Evaluates mutual TLS: even after skipping server verification (`-k`), the sidecar demands a client certificate (`certificate required`).
+
+```bash
+curl https://splunk-hec.openshift-logging.svc:4318/v1/logs -d '{}' -H 'Content-Type: application/json' -k
+```
+
+**2.1.5. Full mTLS success**
+
+Evaluates the intended production-shaped client: trust the lab CA, present the client cert/key, and resolve `splunk-hec` to the port-forward so the server name matches. Expected response:
+
+```bash
+curl https://splunk-hec.openshift-logging.svc:4318/v1/logs -d '{}' -H 'Content-Type: application/json' \
+  --cacert ca.crt --cert tls.crt --key tls.key
+```
+
+```text
+{"partialSuccess":{}}
+```
+###
+
+**2.2.2. Port-forward the OTLP HTTP port**
 
 Evaluates that the Splunk Service exposes the sidecar’s `:4318` and that you can reach it from the workstation without leaving the cluster network open.
 
@@ -282,7 +322,7 @@ Evaluates that the Splunk Service exposes the sidecar’s `:4318` and that you c
 oc -n openshift-logging port-forward service/splunk-hec 4318:4318 &
 ```
 
-**3. Plain HTTP to the OTLP endpoint**
+**2.2.3. Plain HTTP to the OTLP endpoint**
 
 Evaluates that the listener is TLS-only (cleartext HTTP must not be accepted as a log ingest path).
 
@@ -290,7 +330,7 @@ Evaluates that the listener is TLS-only (cleartext HTTP must not be accepted as 
 curl http://127.0.0.1:4318/v1/logs -d '{}' -H 'Content-Type: application/json'
 ```
 
-**4. HTTPS without trusting the lab CA**
+**2.2.4. HTTPS without trusting the lab CA**
 
 Evaluates server authenticity: the sidecar presents a cert whose SANs are `splunk-hec…`, not `127.0.0.1`, so a default `curl` to the IP fails hostname verification.
 
@@ -298,7 +338,7 @@ Evaluates server authenticity: the sidecar presents a cert whose SANs are `splun
 curl https://127.0.0.1:4318/v1/logs -d '{}' -H 'Content-Type: application/json'
 ```
 
-**5. HTTPS with verify skipped, still no client cert**
+**2.2.5. HTTPS with verify skipped, still no client cert**
 
 Evaluates mutual TLS: even after skipping server verification (`-k`), the sidecar demands a client certificate (`certificate required`).
 
@@ -306,7 +346,7 @@ Evaluates mutual TLS: even after skipping server verification (`-k`), the sideca
 curl https://127.0.0.1:4318/v1/logs -d '{}' -H 'Content-Type: application/json' -k
 ```
 
-**6. Client cert present, but still dialing by IP**
+**2.2.6. Client cert present, but still dialing by IP**
 
 Evaluates that presenting the client keypair is not enough by itself — hostname / SNI must still match the server certificate SAN (`splunk-hec`).
 
@@ -315,7 +355,7 @@ curl https://127.0.0.1:4318/v1/logs -d '{}' -H 'Content-Type: application/json' 
   --cacert ca.crt --cert tls.crt --key tls.key
 ```
 
-**7. Full mTLS success**
+**2.2.7. Full mTLS success**
 
 Evaluates the intended production-shaped client: trust the lab CA, present the client cert/key, and resolve `splunk-hec` to the port-forward so the server name matches. Expected response:
 

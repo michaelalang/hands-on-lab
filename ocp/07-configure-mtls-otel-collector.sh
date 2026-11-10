@@ -545,6 +545,7 @@ spec:
           key_file: /etc/certs/client/tls.key
           max_version: '1.3'
           min_version: '1.3'
+          reload_interval: 1m
       debug:
         verbosity: detailed
 

@@ -9,3 +9,7 @@ export NAMESPACE_PIPELINE=openshift-pipelines
 kubectl apply -f instance-configurations/lokistack.yml ; echo 
 kubectl apply -f instance-configurations/coo-uiplugin.yml
 kubectl apply -f instance-configurations/tekton.yml
+
+echo "WAIT !! before executing the next tasks if you are on OCP UI"
+echo "We just modified the UI Plugin list which will log us out of this pod terminal"
+sleep 60
