@@ -6,4 +6,7 @@ resources:
 - apache-deploy.yml
 - apache2-deploy.yml
 - htpasswd.yml
+- route.yml
+- service.yml
+
 namespace: normalization

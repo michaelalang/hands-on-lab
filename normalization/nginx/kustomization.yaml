@@ -5,4 +5,7 @@ resources:
 - nginx-config2.yml
 - nginx-deploy.yml
 - nginx-deploy2.yml
+- route.yml
+- service.yml
+
 namespace: normalization

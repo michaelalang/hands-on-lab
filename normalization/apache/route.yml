@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apache
+spec:
+  host: apache.example.com
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: apache
+    weight: 100
+  tls:
+    termination: edge
+  wildcardPolicy: None
