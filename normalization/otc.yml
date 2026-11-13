@@ -1,0 +1,254 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+spec:
+  config:
+    exporters:
+      debug:
+        verbosity: detailed
+      otlp_http/lokistack/application:
+        auth:
+          authenticator: bearertokenauth
+        endpoint: https://lokistack-gateway-http.openshift-logging.svc.cluster.local:8080/api/logs/v1/application/otlp
+        retry_on_failure:
+          enabled: true
+          initial_interval: 60s
+          max_elapsed_time: 600s
+          max_interval: 120s
+        tls:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+    extensions:
+      bearertokenauth:
+        filename: /var/run/secrets/kubernetes.io/serviceaccount/token
+    processors:
+      filter/weblogs:
+        error_mode: ignore
+        log_conditions:
+          - log.attributes["http.request.method"] == nil
+      transform/apache:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - merge_maps(log.attributes, ExtractGrokPatterns(log.body, "%{COMBINEDAPACHELOG}.*"),
+                "upsert")
+              - set(log.attributes["client.address"], Trim(Split(log.attributes["tmp_xff"],
+                ",")[0], " ")) where log.attributes["tmp_xff"] != nil and log.attributes["tmp_xff"]
+                != "-"
+              - set(log.attributes["client.address"], log.attributes["source.address"])
+                where log.attributes["source.address"] != nil
+              - set(log.attributes["user.name"], log.attributes["auth"]) where log.attributes["auth"]
+                != nil and log.attributes["auth"] != "-"
+              - delete_key(log.attributes, "user.name") where log.attributes["user.name"]
+                == "-"
+              - set(log.attributes["url.path"], log.attributes["url.original"]) where
+                log.attributes["url.original"] != nil
+              - set(log.attributes["network.protocol.version"], log.attributes["http.version"])
+                where log.attributes["http.version"] != nil
+              - set(log.time, Time(log.attributes["timestamp"], "%d/%b/%Y:%H:%M:%S
+                %z")) where log.attributes["timestamp"] != nil
+              - set(log.attributes["http.response.body.size"], Int(log.attributes["http.response.body.bytes"]))
+                where log.attributes["http.response.body.bytes"] != nil
+              - set(log.attributes["http.response.body.size"], Int(log.attributes["bytes"]))
+                where log.attributes["bytes"] != nil
+              - keep_keys(log.attributes, ["client.address", "network.peer.address",
+                "user.name", "http.request.method", "url.path", "network.protocol.version",
+                "http.response.status_code", "http.response.body.size", "user_agent.original",
+                "log.file.path", "log.iostream", "logtag"]) where log.attributes["source.address"]
+                != nil
+      transform/apache/custom:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - merge_maps(log.attributes, ExtractGrokPatterns(log.body, "\\[HTTPD\\]
+                ts=%{TIMESTAMP_ISO8601:tmp_time} client=%{IPORHOST:tmp_ip} auth=%{DATA:tmp_user}
+                method=%{WORD:tmp_method} path=%{URIPATHPARAM:tmp_path} proto=%{DATA:tmp_proto}
+                status=%{NUMBER:tmp_status:int} bytes=%{NUMBER:tmp_bytes:int} agent=\"%{DATA:tmp_ua}\".*"),
+                "upsert")
+              - set(log.attributes["client.address"], log.attributes["tmp_ip"]) where
+                log.attributes["tmp_ip"] != nil
+              - set(log.attributes["user.name"], log.attributes["tmp_user"]) where
+                log.attributes["tmp_user"] != nil and log.attributes["tmp_user"] !=
+                "-"
+              - set(log.attributes["http.request.method"], log.attributes["tmp_method"])
+                where log.attributes["tmp_method"] != nil
+              - set(log.attributes["url.path"], log.attributes["tmp_path"]) where
+                log.attributes["tmp_path"] != nil
+              - set(log.attributes["network.protocol.version"], log.attributes["tmp_proto"])
+                where log.attributes["tmp_proto"] != nil
+              - replace_pattern(log.attributes["network.protocol.version"], "^HTTP/",
+                "") where log.attributes["network.protocol.version"] != nil
+              - set(log.attributes["http.response.status_code"], log.attributes["tmp_status"])
+                where log.attributes["tmp_status"] != nil
+              - set(log.attributes["http.response.body.size"], log.attributes["tmp_bytes"])
+                where log.attributes["tmp_bytes"] != nil
+              - set(log.attributes["user_agent.original"], log.attributes["tmp_ua"])
+                where log.attributes["tmp_ua"] != nil
+              - set(log.time, Time(log.attributes["tmp_time"], "%Y-%m-%dT%H:%M:%SZ"))
+                where log.attributes["tmp_time"] != nil
+              - keep_keys(log.attributes, ["client.address", "network.peer.address",
+                "user.name", "http.request.method", "url.path", "network.protocol.version",
+                "http.response.status_code", "http.response.body.size", "user_agent.original",
+                "log.file.path", "log.iostream", "logtag"]) where log.attributes["tmp_ip"]
+                != nil
+      transform/clf:
+        error_mode: ignore
+        log_statements:
+          - conditions:
+              - true == true
+            context: log
+            statements:
+              - set(resource.attributes["openshift.log.type"], "application")
+              - set(log.attributes["openshift.log.type"], "application")
+              - set(resource.attributes["log.type"], "application")
+              - set(log.attributes["log.type"], "application")
+      transform/nginx:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - merge_maps(log.attributes, ExtractGrokPatterns(log.body, "%{COMBINEDAPACHELOG}.*"),
+                "upsert") where log.attributes["client.address"] == nil
+              - set(log.attributes["client.address"], Trim(Split(log.attributes["tmp_xff"],
+                ",")[0], " ")) where log.attributes["tmp_xff"] != nil and log.attributes["tmp_xff"]
+                != "-"
+              - set(log.attributes["client.address"], log.attributes["source.address"])
+                where log.attributes["source.address"] != nil and log.attributes["client.address"]
+                == nil
+              - set(log.attributes["user.name"], log.attributes["auth"]) where log.attributes["auth"]
+                != nil and log.attributes["auth"] != "-"
+              - delete_key(log.attributes, "user.name") where log.attributes["user.name"]
+                == "-"
+              - set(log.attributes["url.path"], log.attributes["url.original"]) where
+                log.attributes["url.original"] != nil
+              - set(log.attributes["network.protocol.version"], log.attributes["http.version"])
+                where log.attributes["http.version"] != nil
+              - set(log.time, Time(log.attributes["timestamp"], "%d/%b/%Y:%H:%M:%S
+                %z")) where log.attributes["timestamp"] != nil
+              - set(log.attributes["http.response.body.size"], Int(log.attributes["http.response.body.bytes"]))
+                where log.attributes["http.response.body.bytes"] != nil
+              - set(log.attributes["http.response.body.size"], Int(log.attributes["bytes"]))
+                where log.attributes["bytes"] != nil
+              - keep_keys(log.attributes, ["client.address", "network.peer.address",
+                "user.name", "http.request.method", "url.path", "network.protocol.version",
+                "http.response.status_code", "http.response.body.size", "user_agent.original",
+                "log.file.path", "log.iostream", "logtag"]) where log.attributes["source.address"]
+                != nil
+      transform/nginx/custom:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - merge_maps(log.attributes, ExtractGrokPatterns(log.body, "\\[NGINX\\]
+                ts=%{TIMESTAMP_ISO8601:tmp_time} client=%{IPORHOST:tmp_ip} auth=%{DATA:tmp_user}
+                method=%{WORD:tmp_method} path=%{URIPATHPARAM:tmp_path} proto=%{DATA:tmp_proto}
+                status=%{NUMBER:tmp_status:int} bytes=%{NUMBER:tmp_bytes:int} agent=\"%{DATA:tmp_ua}\".*"),
+                "upsert") where log.attributes["client.address"] == nil
+              - set(log.attributes["client.address"], log.attributes["tmp_ip"]) where
+                log.attributes["tmp_ip"] != nil and log.attributes["client.address"]
+                == nil
+              - set(log.attributes["user.name"], log.attributes["tmp_user"]) where
+                log.attributes["tmp_user"] != nil and log.attributes["tmp_user"] !=
+                "-"
+              - set(log.attributes["http.request.method"], log.attributes["tmp_method"])
+                where log.attributes["tmp_method"] != nil
+              - set(log.attributes["url.path"], log.attributes["tmp_path"]) where
+                log.attributes["tmp_path"] != nil
+              - set(log.attributes["network.protocol.version"], log.attributes["tmp_proto"])
+                where log.attributes["tmp_proto"] != nil
+              - replace_pattern(log.attributes["network.protocol.version"], "^HTTP/",
+                "") where log.attributes["network.protocol.version"] != nil
+              - set(log.attributes["http.response.status_code"], log.attributes["tmp_status"])
+                where log.attributes["tmp_status"] != nil
+              - set(log.attributes["http.response.body.size"], log.attributes["tmp_bytes"])
+                where log.attributes["tmp_bytes"] != nil
+              - set(log.attributes["user_agent.original"], log.attributes["tmp_ua"])
+                where log.attributes["tmp_ua"] != nil
+              - set(log.time, Time(log.attributes["tmp_time"], "%Y-%m-%dT%H:%M:%S%z"))
+                where log.attributes["tmp_time"] != nil
+              - keep_keys(log.attributes, ["client.address", "network.peer.address",
+                "user.name", "http.request.method", "url.path", "network.protocol.version",
+                "http.response.status_code", "http.response.body.size", "user_agent.original",
+                "log.file.path", "log.iostream", "logtag"]) where log.attributes["tmp_ip"]
+                != nil
+      transform/unified:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(log.attributes["tmp_user"], "-")
+              - set(log.attributes["tmp_user"], "Auth") where log.attributes["user.name"]
+                != nil
+              - set(log.body, Concat([FormatTime(log.time, "%Y-%m-%dT%H:%M:%SZ"),
+                " ", String(log.attributes["client.address"]), " ", String(log.attributes["tmp_user"]),
+                " ", String(log.attributes["http.response.status_code"]), " [", String(log.attributes["http.response.body.size"]),
+                "]", " - ", String(log.attributes["http.request.method"]), " ", String(log.attributes["user_agent.original"])],
+                "")) where log.attributes["client.address"] != nil
+              - delete_key(log.attributes, "tmp_user")
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    service:
+      extensions:
+        - bearertokenauth
+      pipelines:
+        logs:
+          exporters:
+            - debug
+            - otlp_http/lokistack/application
+          processors:
+            - transform/apache
+            - transform/apache/custom
+            - transform/nginx
+            - transform/nginx/custom
+            - transform/unified
+            - filter/weblogs
+            - transform/clf
+          receivers:
+            - otlp
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+  configVersions: 3
+  daemonSetUpdateStrategy: {}
+  deploymentUpdateStrategy: {}
+  httpRoute:
+    enabled: false
+    gateway: ''
+  ingress:
+    route: {}
+  ipFamilyPolicy: SingleStack
+  managementState: managed
+  mode: deployment
+  networkPolicy:
+    enabled: true
+  observability:
+    metrics: {}
+  podDnsConfig: {}
+  replicas: 1
+  resources: {}
+  targetAllocator:
+    allocationStrategy: consistent-hashing
+    collectorNotReadyGracePeriod: 30s
+    collectorTargetReloadInterval: 30s
+    filterStrategy: relabel-config
+    observability:
+      metrics: {}
+    prometheusCR:
+      evaluationInterval: 30s
+      podMonitorNamespaceSelector: {}
+      probeNamespaceSelector: {}
+      scrapeConfigNamespaceSelector: {}
+      scrapeInterval: 30s
+      serviceMonitorNamespaceSelector: {}
+    resources: {}
+  upgradeStrategy: automatic

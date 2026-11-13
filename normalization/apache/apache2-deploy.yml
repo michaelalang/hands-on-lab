@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  name: apache2
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: apache
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: apache
+    spec:
+      containers:
+        - image: registry.access.redhat.com/hi/httpd:latest
+          imagePullPolicy: Always
+          name: container
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/httpd/conf.d/custom.conf
+              name: custom
+              subPath: custom.conf
+            - mountPath: /etc/httpd/conf.d/.htpasswd
+              name: htpasswd
+              subPath: .htpasswd
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: apache-custom2
+          name: custom
+        - configMap:
+            defaultMode: 420
+            name: htpasswd
+          name: htpasswd

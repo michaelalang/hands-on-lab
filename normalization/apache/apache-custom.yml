@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  custom.conf: "<IfModule !remoteip_module>\n  LoadModule remoteip_module modules/mod_remoteip.so\n\
+    </IfModule>\n\n# Trust internal Kubernetes proxies and private client IPs\nRemoteIPHeader\
+    \ X-Forwarded-For\nRemoteIPInternalProxy 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16\
+    \ 127.0.0.1 ::1\n\n# Format: %a for Remote IP, %u for Authenticated User\n# (If\
+    \ using an upstream OAuth/Auth proxy, replace %u with %{X-Remote-User}i)\nLogFormat\
+    \ \"%a %l %u %t \\\"%r\\\" %>s %b \\\"%{Referer}i\\\" \\\"%{User-Agent}i\\\"\"\
+    \ combined\n#CustomLog /proc/self/fd/1 combined\n\n# --- OPTIONAL: Enable this\
+    \ block if you want Apache to validate Basic Auth for %u ---\n<Directory \"/var/www/html\"\
+    >\n  AuthType Basic\n  AuthName \"Restricted Access\"\n  AuthBasicProvider file\n\
+    \  AuthUserFile /etc/httpd/conf.d/.htpasswd\n  Require valid-user\n</Directory>"
+kind: ConfigMap
+metadata:
+  name: apache-custom

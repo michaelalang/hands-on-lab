@@ -1,0 +1,195 @@
+apiVersion: operator.tekton.dev/v1alpha1
+kind: TektonConfig
+metadata:
+  name: config
+spec:
+  addon:
+    params:
+      - name: pipelineTemplates
+        value: 'true'
+      - name: resolverTasks
+        value: 'true'
+      - name: resolverStepActions
+        value: 'true'
+      - name: communityResolverTasks
+        value: 'true'
+  chain:
+    artifacts.oci.format: simplesigning
+    artifacts.oci.storage: oci
+    artifacts.pipelinerun.format: in-toto
+    artifacts.pipelinerun.storage: oci
+    artifacts.taskrun.format: in-toto
+    artifacts.taskrun.storage: oci
+    disabled: false
+    options: {}
+    performance:
+      disable-ha: false
+  config: {}
+  dashboard:
+    options:
+      disabled: false
+    readonly: false
+  hub:
+    options:
+      disabled: false
+  multiclusterProxyAAE:
+    options: {}
+  params:
+    - name: createRbacResource
+      value: 'true'
+  pipeline:
+    await-sidecar-readiness: true
+    coschedule: workspaces
+    default-service-account: pipeline
+    disable-creds-init: false
+    enable-api-fields: beta
+    enable-bundles-resolver: true
+    enable-cel-in-whenexpression: false
+    enable-cluster-resolver: true
+    enable-custom-tasks: true
+    enable-git-resolver: true
+    enable-hub-resolver: true
+    enable-param-enum: false
+    enable-provenance-in-status: true
+    enable-step-actions: true
+    enforce-nonfalsifiability: none
+    keep-pod-on-cancel: false
+    max-result-size: 4096
+    metrics.count.enable-reason: false
+    metrics.pipelinerun.duration-type: histogram
+    metrics.pipelinerun.level: pipeline
+    metrics.taskrun.duration-type: histogram
+    metrics.taskrun.level: task
+    options:
+      disabled: false
+    params:
+      - name: enableMetrics
+        value: 'true'
+    performance:
+      disable-ha: false
+    require-git-ssh-secret-known-hosts: false
+    results-from: termination-message
+    running-in-environment-with-injected-sidecars: true
+    send-cloudevents-for-runs: false
+    set-security-context: false
+    trusted-resources-verification-no-match-policy: ignore
+  platforms:
+    openshift:
+      pipelinesAsCode:
+        enable: true
+        options:
+          disabled: false
+        settings:
+          application-name: Pipelines as Code CI
+          auto-configure-new-github-repo: 'false'
+          auto-configure-repo-namespace-template: ''
+          auto-configure-repo-repository-template: ''
+          bitbucket-cloud-additional-source-ip: ''
+          bitbucket-cloud-check-source-ip: 'true'
+          custom-console-name: ''
+          custom-console-url: ''
+          custom-console-url-namespace: ''
+          custom-console-url-pr-details: ''
+          custom-console-url-pr-tasklog: ''
+          default-max-keep-runs: '0'
+          enable-cancel-in-progress-on-pull-requests: 'false'
+          enable-cancel-in-progress-on-push: 'false'
+          error-detection-from-container-logs: 'true'
+          error-detection-max-number-of-lines: '50'
+          error-detection-simple-regexp: ^(?P<filename>[^:]*):(?P<line>[0-9]+):(?P<column>[0-9]+):([
+            ]*)?(?P<error>.*)
+          error-log-snippet: 'true'
+          error-log-snippet-number-of-lines: '3'
+          hub-catalog-type: artifacthub
+          hub-url: https://artifacthub.io
+          max-keep-run-upper-limit: '0'
+          remember-ok-to-test: 'true'
+          remote-tasks: 'true'
+          require-ok-to-test-sha: 'false'
+          secret-auto-create: 'true'
+          secret-github-app-scope-extra-repos: ''
+          secret-github-app-token-scoped: 'true'
+          skip-push-event-for-pr-commits: 'true'
+          tekton-dashboard-url: ''
+      scc:
+        default: pipelines-scc
+  profile: all
+  pruner:
+    disabled: false
+    keep: 5
+    resources:
+      - pipelinerun
+      - taskrun
+    schedule: 0 8 * * *
+  result:
+    disabled: false
+    is_external_db: false
+    options:
+      deployments:
+        tekton-results-api:
+          metadata:
+            creationTimestamp: null
+          spec:
+            selector: null
+            strategy: {}
+            template:
+              metadata:
+                creationTimestamp: null
+              spec:
+                containers:
+                  - env:
+                      - name: LOGGING_PLUGIN_API_URL
+                        value: https://splunk-hec.openshift-logging.svc.cluster.local:8089/
+                      - name: LOGGING_PLUGIN_QUERY_PARAMS
+                        value: index=main
+                      - name: SPLUNK_SEARCH_TOKEN
+                        valueFrom:
+                          secretKeyRef:
+                            key: token
+                            name: tekton-results-splunk
+                      - name: LOGGING_PLUGIN_TLS_VERIFICATION_DISABLE
+                        value: 'true'
+                      #- name: LOGGING_PLUGIN_CA_CERT
+                      #  value: "/etc/custom/certs/ca.crt"
+                      - name: LOGS_API
+                        value: 'true'
+                      - name: LOGS_TYPE
+                        value: Splunk
+                      - name: SQL_LOG_LEVEL
+                        value: debug
+                    #volumeMounts:
+                    #- name: customcerts
+                    #  mountPath: /etc/custom/certs/ca.crt
+                    #  subPath: ca.crt
+                    name: api
+                    resources: {}
+                #volumes:
+                #- configMap:
+                #    name: customcertsca
+                #  name: customcerts
+          status: {}
+    performance:
+      disable-ha: false
+    route_enabled: true
+    route_tls_termination: edge
+  scheduler:
+    config.yaml:
+      cel: {}
+      queueName: pipelines-queue
+    disabled: true
+    multi-cluster-disabled: true
+    multi-cluster-role: ''
+    options: {}
+  targetNamespace: openshift-pipelines
+  tektonpruner:
+    disabled: true
+    global-config:
+      enforcedConfigLevel: global
+      historyLimit: 100
+    options: {}
+  trigger:
+    default-service-account: pipeline
+    disabled: false
+    enable-api-fields: stable
+    options:
+      disabled: false

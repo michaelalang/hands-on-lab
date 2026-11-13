@@ -1,0 +1,8 @@
+apiVersion: observability.openshift.io/v1alpha1
+kind: UIPlugin
+metadata:
+  name: logging
+spec:
+  logging:
+    schema: otel
+  type: Logging

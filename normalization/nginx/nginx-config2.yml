@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  default.conf: "set_real_ip_from  10.0.0.0/8;\nset_real_ip_from  172.16.0.0/12;\n\
+    set_real_ip_from  192.168.0.0/16;\nset_real_ip_from  127.0.0.1;\nset_real_ip_from\
+    \  ::1;\nreal_ip_header    X-Forwarded-For;\nreal_ip_recursive on;\n\n# Custom\
+    \ key-value format for Nginx\nlog_format custom_nginx '[NGINX] ts=$time_iso8601\
+    \ client=$remote_addr auth=$remote_user method=$request_method path=$uri proto=$server_protocol\
+    \ status=$status bytes=$body_bytes_sent agent=\"$http_user_agent\"';\n\nserver\
+    \ {\n    listen 8080;\n    server_name _;\n\n    access_log /dev/stdout custom_nginx;\n\
+    \    error_log  /dev/stderr warn;\n\n    location / {\n        root   /usr/share/nginx/html;\n\
+    \        index  index.html;\n\n        auth_basic           \"Restricted Access\"\
+    ;\n        auth_basic_user_file /etc/nginx/.htpasswd;\n    }\n}"
+kind: ConfigMap
+metadata:
+  name: nginx-config2
