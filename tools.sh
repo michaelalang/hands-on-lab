@@ -4,8 +4,8 @@ mkdir -p "${LAB_BIN}"
 export PATH="${LAB_BIN}:${PATH}"
 
 # Persist for new shells (safe to re-run)
-grep -q 'lab-bin' "${HOME}/.bashrc" 2>/dev/null || \
-  echo 'export PATH="\${HOME}/lab-bin:\${PATH}"' >> "${HOME}/.bashrc"
+#grep -q 'lab-bin' "${HOME}/.bashrc" 2>/dev/null || \
+#  echo 'export PATH="\${HOME}/lab-bin:\${PATH}"' >> "${HOME}/.bashrc"
 
 # Map host CPU architecture to upstream release names
 case "$(uname -m)" in
