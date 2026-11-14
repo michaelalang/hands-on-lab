@@ -3,7 +3,6 @@ kind: Route
 metadata:
   name: apache
 spec:
-  host: apache.example.com
   port:
     targetPort: http
   to:

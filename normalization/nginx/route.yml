@@ -3,7 +3,6 @@ kind: Route
 metadata:
   name: nginx
 spec:
-  host: nginx.example.com
   port:
     targetPort: http
   to:
